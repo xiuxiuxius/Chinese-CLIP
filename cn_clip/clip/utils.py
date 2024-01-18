@@ -93,6 +93,7 @@ def load_from_name(name: str, device: Union[str, torch.device] = "cuda" if torch
     else:
         raise RuntimeError(f"Model {name} not found; available models = {available_models()}")
 
+    print("model_path:", model_path)
     with open(model_path, 'rb') as opened_file:
         # loading saved checkpoint
         checkpoint = torch.load(opened_file, map_location="cpu")

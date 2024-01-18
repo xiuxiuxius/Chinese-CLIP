@@ -8,14 +8,13 @@
 # Command: bash run_scripts/muge_finetune_vit-b-16_rbt-base.sh ${DATAPATH}
 
 # Number of GPUs per GPU worker
-GPUS_PER_NODE=1
+GPUS_PER_NODE=8 
 # Number of GPU workers, for single-worker training, please set to 1
 WORKER_CNT=1
 # The ip address of the rank-0 worker, for single-worker training, please set to localhost
-#export MASTER_ADDR=XX.XX.XX.XX
-export MASTER_ADDR=localhost
+export MASTER_ADDR=XX.XX.XX.XX
 # The port for communication
-export MASTER_PORT=8890
+export MASTER_PORT=8514
 # The rank of this worker, should be in {0, ..., WORKER_CNT-1}, for single-worker training, please set to 0
 export RANK=0 
 
@@ -24,8 +23,8 @@ export PYTHONPATH=${PYTHONPATH}:`pwd`/cn_clip/
 DATAPATH=${1}
 
 # data options
-train_data=${DATAPATH}/datasets/MUGE/lmdb/train
-val_data=${DATAPATH}/datasets/MUGE/lmdb/valid # if val_data is not specified, the validation will be automatically disabled
+train_data=${DATAPATH}/datasets/Flickr30k-CN/lmdb/train
+val_data=${DATAPATH}/datasets/Flickr30k-CN/lmdb/valid # if val_data is not specified, the validation will be automatically disabled
 
 # restore options
 resume=${DATAPATH}/pretrained_weights/clip_cn_vit-b-16.pt # or specify your customed ckpt path to resume
@@ -35,7 +34,7 @@ reset_optimizer="--reset-optimizer"
 
 # output options
 output_base_dir=${DATAPATH}/experiments/
-name=muge_finetune_vit-b-16_roberta-base_bs128_8gpu
+name=flickr30k_finetune_vit-b-16_roberta-base_bs128_8gpu
 save_step_frequency=999999 # disable it
 save_epoch_frequency=1
 log_interval=1
@@ -50,7 +49,7 @@ valid_batch_size=128
 accum_freq=1
 lr=5e-5
 wd=0.001
-max_epochs=3 # or you can alternatively specify --max-steps
+max_epochs=3  # or you can alternatively specify --max-steps
 valid_step_interval=150
 valid_epoch_interval=1
 vision_model=ViT-B-16
