@@ -151,4 +151,4 @@ core.*
 
 # Allow
 !src/evaluation/misc/results_dbs/*
-README.md
+!README.md
