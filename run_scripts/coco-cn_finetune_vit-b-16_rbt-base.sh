@@ -15,7 +15,7 @@ WORKER_CNT=1
 #export MASTER_ADDR=XX.XX.XX.XX
 export MASTER_ADDR=localhost
 # The port for communication
-export MASTER_PORT=8514
+export MASTER_PORT=18889
 # The rank of this worker, should be in {0, ..., WORKER_CNT-1}, for single-worker training, please set to 0
 export RANK=0
 
@@ -28,19 +28,12 @@ train_data=${DATAPATH}/datasets/COCO-CN/lmdb/train
 val_data=${DATAPATH}/datasets/COCO-CN/lmdb/valid # if val_data is not specif  ied, the validation will be automatically disabled
 
 # restore options
-resume=${DATAPATH}/pretrained_weights/clip_cn_vit-b-16.pt # or specify your customed ckpt path to resume
+#resume=${DATAPATH}/pretrained_weights/clip_cn_vit-b-16.pt # or specify your customed ckpt path to resume
+resume=${DATAPATH}/experiments/coco-cn_finetune_vit-b-16_roberta-base_bs1024_8gpu/checkpoints/epoch_latest.pt
 reset_data_offset="--reset-data-offset"
 reset_optimizer="--reset-optimizer"
 # reset_optimizer=""
 
-# output options
-output_base_dir=${DATAPATH}/experiments/
-name=coco-cn_finetune_vit-b-16_roberta-base_bs1024_8gpu
-save_step_frequency=999999 # disable it
-save_epoch_frequency=1
-log_interval=1
-report_training_batch_acc="--report-training-batch-acc"
-# report_training_batch_acc=""
 
 # training hyper-params
 context_length=52
@@ -57,6 +50,18 @@ vision_model=ViT-B-16
 text_model=RoBERTa-wwm-ext-base-chinese
 use_augment="--use-augment"
 # use_augment=""
+#freeze_vision="--freeze-vision"
+freeze_vision=""
+
+# output options
+output_base_dir=${DATAPATH}/experiments/
+#name=coco-cn_finetune_vit-b-16_roberta-base_bs1024_8gpu
+name=coco-cn_finetune_vit-b-16_roberta-base_bs${batch_size}_${GPUS_PER_NODE}gpu_$(date +%Y%m%d%H%M%S)
+save_step_frequency=999999 # disable it
+save_epoch_frequency=5
+log_interval=1
+report_training_batch_acc="--report-training-batch-acc"
+# report_training_batch_acc=""
 
 python3 -m torch.distributed.launch --use_env --nproc_per_node=${GPUS_PER_NODE} --nnodes=${WORKER_CNT} --node_rank=${RANK} \
           --master_addr=${MASTER_ADDR} --master_port=${MASTER_PORT} cn_clip/training/main.py \
@@ -84,4 +89,5 @@ python3 -m torch.distributed.launch --use_env --nproc_per_node=${GPUS_PER_NODE} 
           --vision-model=${vision_model} \
           ${use_augment} \
           --text-model=${text_model} \
-          --grad-checkpointing
+          --grad-checkpointing \
+          ${freeze_vision}

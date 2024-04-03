@@ -74,11 +74,11 @@ if __name__ == "__main__":
                 text_feat = obj['feature']
                 score_tuples = []
                 text_feat_tensor = torch.tensor([text_feat], dtype=torch.float).cuda() # [1, feature_dim]
-                print("text_feat_tensor.shape :", text_feat_tensor.shape)
+                # print("text_feat_tensor.shape :", text_feat_tensor.shape)
                 idx = 0
                 while idx < len(image_ids):
                     img_feats_tensor = torch.from_numpy(image_feats_array[idx : min(idx + args.eval_batch_size, len(image_ids))]).cuda() # [batch_size, feature_dim]
-                    print("img_feats_tensor.shape :", img_feats_tensor.shape)
+                    # print("img_feats_tensor.shape :", img_feats_tensor.shape)
                     batch_scores = text_feat_tensor @ img_feats_tensor.t() # [1, batch_size]
                     for image_id, score in zip(image_ids[idx : min(idx + args.eval_batch_size, len(image_ids))], batch_scores.squeeze(0).tolist()):
                         score_tuples.append((image_id, score))

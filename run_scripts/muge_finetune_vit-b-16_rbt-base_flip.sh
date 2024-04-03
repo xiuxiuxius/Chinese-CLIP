@@ -8,13 +8,14 @@
 # Command: bash run_scripts/muge_finetune_vit-b-16_rbt-base.sh ${DATAPATH}
 
 # Number of GPUs per GPU worker
-GPUS_PER_NODE=8 
+GPUS_PER_NODE=1
 # Number of GPU workers, for single-worker training, please set to 1
 WORKER_CNT=1
 # The ip address of the rank-0 worker, for single-worker training, please set to localhost
-export MASTER_ADDR=XX.XX.XX.XX
+#export MASTER_ADDR=XX.XX.XX.XX
+export MASTER_ADDR=localhost
 # The port for communication
-export MASTER_PORT=8514
+export MASTER_PORT=18890
 # The rank of this worker, should be in {0, ..., WORKER_CNT-1}, for single-worker training, please set to 0
 export RANK=0 
 
@@ -32,15 +33,6 @@ reset_data_offset="--reset-data-offset"
 reset_optimizer="--reset-optimizer"
 # reset_optimizer=""
 
-# output options
-output_base_dir=${DATAPATH}/experiments/
-name=muge_finetune_vit-b-16_roberta-base_bs128_8gpu
-save_step_frequency=999999 # disable it
-save_epoch_frequency=1
-log_interval=1
-report_training_batch_acc="--report-training-batch-acc"
-# report_training_batch_acc=""
-
 # training hyper-params
 context_length=52
 warmup=100
@@ -57,6 +49,18 @@ text_model=RoBERTa-wwm-ext-base-chinese
 mask_ratio=0.5 # use flip: set mask ratio
 use_augment="--use-augment"
 # use_augment=""
+#freeze_vision="--freeze-vision"
+freeze_vision=""
+
+# output options
+output_base_dir=${DATAPATH}/experiments/
+#name=muge_finetune_vit-b-16_roberta-base_bs128_8gpu
+name=muge_finetune_vit-b-16_roberta-base_bs${batch_size}_${GPUS_PER_NODE}gpu_$(date +%Y%m%d%H%M%S)
+save_step_frequency=999999 # disable it
+save_epoch_frequency=1
+log_interval=1
+report_training_batch_acc="--report-training-batch-acc"
+# report_training_batch_acc=""
 
 python3 -m torch.distributed.launch --use_env --nproc_per_node=${GPUS_PER_NODE} --nnodes=${WORKER_CNT} --node_rank=${RANK} \
           --master_addr=${MASTER_ADDR} --master_port=${MASTER_PORT} cn_clip/training/main.py \
@@ -84,4 +88,5 @@ python3 -m torch.distributed.launch --use_env --nproc_per_node=${GPUS_PER_NODE} 
           --vision-model=${vision_model} \
           --mask-ratio=${mask_ratio} \
           ${use_augment} \
-          --text-model=${text_model}
+          --text-model=${text_model} \
+          ${freeze_vision}

@@ -15,7 +15,7 @@ WORKER_CNT=1
 #export MASTER_ADDR=XX.XX.XX.XX
 export MASTER_ADDR=localhost
 # The port for communication
-export MASTER_PORT=8890
+export MASTER_PORT=18890
 # The rank of this worker, should be in {0, ..., WORKER_CNT-1}, for single-worker training, please set to 0
 export RANK=0 
 
@@ -29,18 +29,11 @@ val_data=${DATAPATH}/datasets/MUGE/lmdb/valid # if val_data is not specified, th
 
 # restore options
 resume=${DATAPATH}/pretrained_weights/clip_cn_vit-b-16.pt # or specify your customed ckpt path to resume
+#resume=${DATAPATH}/experiments/muge_finetune_vit-b-16_roberta-base_bs128_8gpu/checkpoints/epoch_latest.pt
+#resume=${DATAPATH}/experiments/muge_finetune_vit-b-16_roberta-base_bs128_1gpu_20240401220858/checkpoints/epoch4.pt
 reset_data_offset="--reset-data-offset"
 reset_optimizer="--reset-optimizer"
-# reset_optimizer=""
-
-# output options
-output_base_dir=${DATAPATH}/experiments/
-name=muge_finetune_vit-b-16_roberta-base_bs128_8gpu
-save_step_frequency=999999 # disable it
-save_epoch_frequency=1
-log_interval=1
-report_training_batch_acc="--report-training-batch-acc"
-# report_training_batch_acc=""
+#reset_optimizer=""
 
 # training hyper-params
 context_length=52
@@ -50,13 +43,25 @@ valid_batch_size=128
 accum_freq=1
 lr=5e-5
 wd=0.001
-max_epochs=3 # or you can alternatively specify --max-steps
+max_epochs=20 # or you can alternatively specify --max-steps
 valid_step_interval=150
 valid_epoch_interval=1
 vision_model=ViT-B-16
 text_model=RoBERTa-wwm-ext-base-chinese
 use_augment="--use-augment"
 # use_augment=""
+#freeze_vision="--freeze-vision"
+freeze_vision=""
+
+# output options
+output_base_dir=${DATAPATH}/experiments/
+#name=muge_finetune_vit-b-16_roberta-base_bs128_8gpu
+name=muge_finetune_vit-b-16_roberta-base_bs${batch_size}_${GPUS_PER_NODE}gpu_$(date +%Y%m%d%H%M%S)
+save_step_frequency=999999 # disable it
+save_epoch_frequency=2
+log_interval=1
+report_training_batch_acc="--report-training-batch-acc"
+# report_training_batch_acc=""
 
 python3 -m torch.distributed.launch --use_env --nproc_per_node=${GPUS_PER_NODE} --nnodes=${WORKER_CNT} --node_rank=${RANK} \
           --master_addr=${MASTER_ADDR} --master_port=${MASTER_PORT} cn_clip/training/main.py \
@@ -83,4 +88,5 @@ python3 -m torch.distributed.launch --use_env --nproc_per_node=${GPUS_PER_NODE} 
           --max-epochs=${max_epochs} \
           --vision-model=${vision_model} \
           ${use_augment} \
-          --text-model=${text_model}
+          --text-model=${text_model} \
+          ${freeze_vision}

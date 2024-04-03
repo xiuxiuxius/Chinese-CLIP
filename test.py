@@ -9,8 +9,8 @@ print("Available models:", available_models())
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = load_from_name("RN50", device=device, download_root='../data/pretrained_weights')
 model.eval()
-image = preprocess(Image.open("examples/pokemon.jpeg")).unsqueeze(0).to(device)
-text = clip.tokenize(["杰尼龟", "妙蛙种子", "小火龙", "皮卡丘"]).to(device)
+image = preprocess(Image.open("examples/1.jpg")).unsqueeze(0).to(device)
+text = clip.tokenize(["杰尼龟", "妙蛙种子", "小火龙", "皮卡丘", "在博物馆学习的小朋友"]).to(device)
 
 with torch.no_grad():
     image_features = model.encode_image(image)
@@ -20,6 +20,7 @@ with torch.no_grad():
     text_features /= text_features.norm(dim=-1, keepdim=True)
 
     logits_per_image, logits_per_text = model.get_similarity(image, text)
+    print(logits_per_text)
     probs = logits_per_image.softmax(dim=-1).cpu().numpy()
 
 print("Label probs:", probs)  # [[1.268734e-03 5.436878e-02 6.795761e-04 9.436829e-01]]

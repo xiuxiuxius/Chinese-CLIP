@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 import json
 import time
-from time import gmtime, strftime
+from time import gmtime, strftime, localtime
 import importlib.util
 
 import torch
@@ -57,7 +57,8 @@ def main():
     args.world_size = dist.get_world_size()
 
     # Set output path
-    time_suffix = strftime("%Y-%m-%d-%H-%M-%S", gmtime())
+    # time_suffix = strftime("%Y-%m-%d-%H-%M-%S", gmtime())
+    time_suffix = strftime("%Y-%m-%d-%H-%M-%S", localtime())
     args.log_path = os.path.join(args.logs, args.name, "out_{}.log".format(time_suffix))
 
     args.checkpoint_path = os.path.join(args.logs, args.name, "checkpoints")
